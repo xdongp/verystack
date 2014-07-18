@@ -1,9 +1,11 @@
 #Init System
+```
 iptables -F
 service iptables save
 yum -y install ntp
 export PASS=`openssl rand -hex 10`
 export MYIP=`ifconfig eth1|grep "inet addr:"|awk '{print $2}'|awk -F':' '{print $2}'`
+```
 
 yum -y install mysql mysql-server MySQL-python
 ###Config MySQL
