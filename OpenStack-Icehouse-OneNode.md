@@ -7,8 +7,9 @@ export PASS=`openssl rand -hex 10`
 export MYIP=`ifconfig eth1|grep "inet addr:"|awk '{print $2}'|awk -F':' '{print $2}'`
 ```
 
-yum -y install mysql mysql-server MySQL-python
 ###Config MySQL
+```
+yum -y install mysql mysql-server MySQL-python
 cat /etc/my.cnf << EOF
 [mysqld]
 datadir=/var/lib/mysql
@@ -26,10 +27,13 @@ character-set-server = utf8
 log-error=/var/log/mysqld.log
 pid-file=/var/run/mysqld/mysqld.pid
 EOF
+```
 
 ###Start MySQL
+```
 service mysqld start
 chkconfig mysqld on
+```
 
 ###Config Yum
 yum -y install yum-plugin-priorities
