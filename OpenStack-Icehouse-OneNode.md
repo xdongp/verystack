@@ -171,6 +171,7 @@ glance image-list
 
 
 #Install Nova
+```
 yum -y install openstack-nova-api openstack-nova-cert openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler python-novaclient
 openstack-config --set /etc/nova/nova.conf database connection mysql://nova:$PASS@$MYIP/nova
 
@@ -194,8 +195,10 @@ su -s /bin/sh -c "nova-manage db sync" nova
  
 keystone user-create --name=nova --pass=$PASS --email=nova@test.com
 keystone user-role-add --user=nova --tenant=service --role=admin
+```
 
 ###auth
+```
 openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
 openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_uri http://$MYIP:5000
 openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_host $MYIP
@@ -204,15 +207,19 @@ openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_port 35357
 openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_user nova
 openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_tenant_name service
 openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_password $PASS
+```
 
 ###keystone
+```
 keystone service-create --name=nova --type=compute --description="OpenStack Compute"
 keystone endpoint-create --service-id=$(keystone service-list | awk '/ compute / {print $2}')  \
 --publicurl=http://$MYIP:8774/v2/%\(tenant_id\)s  \
 --internalurl=http://$MYIP:8774/v2/%\(tenant_id\)s  \
 --adminurl=http://$MYIP:8774/v2/%\(tenant_id\)s
+```
 
 ###start service
+```
 service openstack-nova-api start
 service openstack-nova-cert start
 service openstack-nova-consoleauth start 
@@ -225,11 +232,15 @@ chkconfig openstack-nova-consoleauth on
 chkconfig openstack-nova-scheduler on
 chkconfig openstack-nova-conductor on
 chkconfig openstack-nova-novncproxy on
+```
 
 ###test nova
+```
 nova image-list
+```
 
 ###ompute
+```
 yum -y install openstack-nova-compute libvirt
 openstack-config --set /etc/nova/nova.conf database connection mysql://nova:$PASS@$MYIP/nova
 openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
@@ -240,8 +251,10 @@ openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_port 35357
 openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_user nova
 openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_tenant_name service
 openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_password $PASS
+```
 
 ###queue
+```
 openstack-config --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
 openstack-config --set /etc/nova/nova.conf DEFAULT qpid_hostname $MYIP
 openstack-config --set /etc/nova/nova.conf DEFAULT qpid_username guest
@@ -255,17 +268,20 @@ openstack-config --set /etc/nova/nova.conf DEFAULT novncproxy_base_url http://$M
 
 openstack-config --set /etc/nova/nova.conf DEFAULT glance_host $MYIP
 openstack-config --set /etc/nova/nova.conf libvirt virt_type qemu
+```
 
 ###start service
+```
 service libvirtd start
 service messagebus start
 service openstack-nova-compute start 
 chkconfig libvirtd on
 chkconfig messagebus on
 chkconfig openstack-nova-compute on
-
+```
 
 #Install Neutron
+```
 cat > neutron.sql << EOF
 CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY "$PASS";
@@ -282,8 +298,10 @@ keystone endpoint-create --service-id $(keystone service-list | awk '/ network /
 --internalurl http://$MYIP:9696
 
 yum -y install openstack-neutron openstack-neutron-ml2 python-neutronclient
+```
 
 ###auth
+```
 openstack-config --set /etc/neutron/neutron.conf database connection  mysql://neutron:$PASS@$MYIP/neutron
 openstack-config --set /etc/neutron/neutron.conf DEFAULT  auth_strategy keystone
 openstack-config --set /etc/neutron/neutron.conf keystone_authtoken  auth_uri http://$MYIP:5000
@@ -293,8 +311,10 @@ openstack-config --set /etc/neutron/neutron.conf keystone_authtoken  auth_port 3
 openstack-config --set /etc/neutron/neutron.conf keystone_authtoken  admin_tenant_name service
 openstack-config --set /etc/neutron/neutron.conf keystone_authtoken  admin_user neutron
 openstack-config --set /etc/neutron/neutron.conf keystone_authtoken  admin_password $PASS
+```
 
 ###queue
+```
 openstack-config --set /etc/neutron/neutron.conf DEFAULT  rabbit_host $MYIP
 openstack-config --set /etc/neutron/neutron.conf DEFAULT  rabbit_password guest
 openstack-config --set /etc/neutron/neutron.conf DEFAULT  rabbit_userid guest
@@ -335,20 +355,26 @@ service openstack-nova-conductor restart
 
 service neutron-server start 
 chkconfig neutron-server on
+```
 
 ###network
+```
 sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward=1/g'  /etc/sysctl.conf
 sed -i 's/net.ipv4.conf.default.rp_filter = 1/net.ipv4.conf.default.rp_filter=0/g'  /etc/sysctl.conf
 echo  net.ipv4.conf.all.rp_filter=0 >> /etc/sysctl.conf
 sysctl -p
 
 yum -y install openstack-neutron openstack-neutron-ml2  openstack-neutron-openvswitch
+```
 
 ###l3
+```
 openstack-config --set /etc/neutron/l3_agent.ini DEFAULT  interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
 openstack-config --set /etc/neutron/l3_agent.ini DEFAULT  use_namespaces True
+```
 
 ###dhcp
+```
 openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
 openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
 openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT use_namespaces True
@@ -364,8 +390,10 @@ openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT  metadata_proxy_s
 openstack-config --set /etc/nova/nova.conf DEFAULT  service_neutron_metadata_proxy true
 openstack-config --set /etc/nova/nova.conf DEFAULT  neutron_metadata_proxy_shared_secret $PASS
 service openstack-nova-api restart
+```
 
-#netwrok
+###gre setting
+```
 openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs  local_ip $MYIP
 openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs  tunnel_type gre
 openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ovs  enable_tunneling True
@@ -375,13 +403,16 @@ chkconfig openvswitch on
 ovs-vsctl add-br br-int
 
 ln -s plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+```
 
 ###bug fixed
+```
 cp /etc/init.d/neutron-openvswitch-agent /etc/init.d/neutron-openvswitch-agent.orig
 sed -i 's,plugins/openvswitch/ovs_neutron_plugin.ini,plugin.ini,g' /etc/init.d/neutron-openvswitch-agent
+```
 
-
-
+###start service
+```
 service openvswitch start 
 service neutron-openvswitch-agent start 
 service neutron-l3-agent start
@@ -393,9 +424,10 @@ chkconfig neutron-dhcp-agent on
 chkconfig neutron-metadata-agent on
 chkconfig openvswitch on
 ovs-vsctl add-br br-int
-
+```
 
 ###nova
+```
 openstack-config --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
 openstack-config --set /etc/nova/nova.conf DEFAULT neutron_url http://$MYIP:9696
 openstack-config --set /etc/nova/nova.conf DEFAULT neutron_auth_strategy keystone
@@ -407,22 +439,22 @@ openstack-config --set /etc/nova/nova.conf DEFAULT linuxnet_interface_driver nov
 openstack-config --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
 openstack-config --set /etc/nova/nova.conf DEFAULT security_group_api neutron
 
-
 service openstack-nova-compute restart
 service neutron-openvswitch-agent start 
 chkconfig neutron-openvswitch-agent on
-
+```
 
 #Install DashBoard
+```
 yum -y install memcached python-memcached mod_wsgi openstack-dashboard
 service memcached start
-
 
 sed -i 's/horizon.example.com/0.0.0.0/g' /etc/openstack-dashboard/local_settings
 service httpd start
 service memcached start
 chkconfig httpd on
 chkconfig memcached on
+```
 
 
 
