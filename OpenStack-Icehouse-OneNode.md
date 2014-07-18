@@ -36,25 +36,30 @@ chkconfig mysqld on
 ```
 
 ###Config Yum
+```
 yum -y install yum-plugin-priorities
 yum -y install http://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-3.noarch.rpm
 yum -y install ftp://ftp.is.co.za/mirror/fedora.redhat.com/epel/6/i386/crudini-0.3-2.el6.noarch.rpm
 yum -y install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 yum -y install openstack-utils  openstack-selinux 
 yum -y install kernel
+```
 
 
 #Install RabbitMQ
+```
 yum -y install rabbitmq-server
 chkconfig rabbitmq-server on
 service  rabbitmq-server start
 rabbitmqctl status
 /usr/lib/rabbitmq/bin/rabbitmq-plugins enable rabbitmq_management
 /etc/init.d/rabbitmq-server restart
-curl http://localhost:55672/mgmt/  #user:guest:guest  
+curl http://localhost:55672/mgmt/  #user:guest:guest 
+```
 
 
 #Install Keystone
+```
 yum -y install openstack-keystone python-keystoneclient
 openstack-config --set /etc/keystone/keystone.conf database connection mysql://keystone:$PASS@$MYIP/keystone 
 
@@ -67,8 +72,10 @@ EOF
 
 mysql -uroot < keystone.sql
 su -s /bin/sh -c "keystone-manage db_sync" keystone
+```
 
-#######flush token#######
+###flush token
+```
 (crontab -l -u keystone 2>&1 | grep -q token_flush) || echo '01 * * * * /usr/bin/keystone-manage token_flush >/var/log/keystone/ keystone-tokenflush.log 2>&1' >> /var/spool/cron/keystone
 
 ADMIN_TOKEN=$(openssl rand -hex 10)
@@ -109,9 +116,11 @@ source admin_openrc.sh
 
 keystone token-get
 keystone user-list
+```
 
 
 #Install Glance
+```
 yum -y install openstack-glance python-glanceclient
 openstack-config --set /etc/glance/glance-api.conf database  connection mysql://glance:$PASS@$MYIP/glance
 openstack-config --set /etc/glance/glance-registry.conf database  connection mysql://glance:$PASS@$MYIP/glance
@@ -158,6 +167,7 @@ chkconfig openstack-glance-registry on
 wget http://cdn.download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img
 glance image-create --name "cirros-0.3.2-x86_64" --disk-format qcow2 --container-format bare --is-public True --progress < cirros-0.3.2-x86_64-disk.img
 glance image-list
+```
 
 
 #Install Nova
