@@ -1,0 +1,71 @@
+鲁谷机房
+控制节点：
+lg-pt-controlnode01.bj    10.21.100.40
+lg-pt-controlnode02.bj    10.21.100.41	
+存储节点：
+lg-pt-storagenode01.bj    10.21.100.56
+lg-pt-storagenode02.bj    10.21.100.57
+lg-pt-storagenode03.bj    10.21.100.58
+计算节点：
+lg-pt-computenode01.bj    10.21.100.37
+lg-pt-computenode02.bj    10.21.100.38
+lg-pt-computenode03.bj    10.21.100.39
+lg-pt-computenode04.bj	  10.21.100.55
+lg-pt-computenode05.bj    10.21.100.54
+lg-pt-computenode06.bj    10.21.100.78
+lg-pt-computenode07.bj    10.21.100.79
+lg-pt-computenode08.bj    10.21.100.80
+
+lg-pt-computenode10.bj    10.105.2.5
+lg-pt-computenode11.bj    10.105.2.6
+lg-pt-computenode12.bj    10.105.2.7
+lg-pt-computenode13.bj    10.105.2.8
+lg-pt-computenode14.bj    10.105.2.9
+lg-pt-computenode15.bj    10.105.2.10
+lg-pt-computenode16.bj    10.105.2.11
+lg-pt-computenode17.bj    10.105.2.12
+lg-pt-computenode18.bj    10.105.2.13
+lg-pt-computenode19.bj    10.105.2.14
+lg-pt-computenode20.bj    10.105.2.15
+lg-pt-computenode21.bj    10.105.2.16
+lg-pt-computenode22.bj    10.105.2.17
+
+海航机房
+控制节点：
+hh-pt-control01.bj    10.200.100.25
+hh-pt-control02.bj    10.200.100.26
+
+计算节点：
+hh-pt-compute01.bj    10.200.100.19
+hh-pt-compute02.bj    10.200.100.20
+hh-pt-compute03.bj    10.200.100.21
+hh-pt-compute04.bj    10.200.100.22
+hh-pt-compute05.bj    10.200.100.23
+hh-pt-compute06.bj    10.200.100.24
+hh-pt-compute07.bj    10.200.100.35
+hh-pt-compute08.bj    10.200.100.36
+hh-pt-compute09.bj    10.200.100.37
+hh-pt-compute10.bj    10.200.100.42
+hh-pt-compute11.bj    10.200.100.39
+hh-pt-compute12.bj    10.200.100.40
+hh-pt-compute13.bj    10.200.100.41
+
+总参机房
+控制节点：
+zc-pt-control01.bj    10.99.16.10
+
+存储节点：
+zc-pt-storage01.bj    10.99.16.12
+zc-pt-storage02.bj    10.99.16.11
+
+计算节点：
+zc-pt-compute01.bj    10.99.16.9
+zc-pt-compute02.bj    10.99.16.8
+zc-pt-compute03.bj    10.99.16.7
+zc-pt-compute04.bj    10.99.16.6
+zc-pt-compute05.bj    10.99.16.5
+zc-pt-compute06.bj    10.99.16.13
+zc-pt-compute07.bj    10.99.16.14
+zc-pt-compute08.bj    10.99.16.15
+zc-pt-compute09.bj    10.99.16.16
+zc-pt-compute10.bj    10.99.16.17

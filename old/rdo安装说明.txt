@@ -1,0 +1,165 @@
+Rdo安装说明：
+1，确实机器是centos6.4 64位系统
+2，修改网卡序号，将em3, em4改成em1, em2, em2, em1改成em3, em4，具体如下
+	rpm -e biosdevname
+	cd /etc/sysconfig/network-scripts/
+	mv ifcfg-em1  ifcfg-em3.bak
+	mv ifcfg-em2  ifcfg-em4.bak
+	mv ifcfg-em3  ifcfg-em1
+	mv ifcfg-em4  ifcfg-em2
+	mv ifcfg-em3.bak  ifcfg-em3
+	mv ifcfg-em4.bak  ifcfg-em4
+	sed  -i "s/em3/em1/g" ifcfg-em1
+	sed  -i "s/em4/em2/g" ifcfg-em2
+	sed  -i "s/em1/em3/g" ifcfg-em3
+	sed  -i "s/em2/em4/g" ifcfg-em4
+	如果之前网卡命名为ethX，则执行如下命令：
+	cd /etc/udev/rules.d && mv 70-persistent-net.rules /root/ 
+	cd /etc/sysconfig/network-scripts/
+	mv ifcfg-eth0  ifcfg-eth2.bak
+	mv ifcfg-eth1  ifcfg-eth3.bak
+	mv ifcfg-eth2  ifcfg-eth0
+	mv ifcfg-eth3  ifcfg-eth1
+	mv ifcfg-eth2.bak  ifcfg-eth2
+	mv ifcfg-eth3.bak  ifcfg-eth3
+	sed  -i "s/eth2/eth0/g" ifcfg-eth0
+	sed  -i "s/eth3/eth1/g" ifcfg-eth1
+	sed  -i "s/eth0/eth2/g" ifcfg-eth2
+	sed  -i "s/eth1/eth3/g" ifcfg-eth3
+	
+	mv ifcfg-eth0 ifcfg-em1 && sed  -i "s/eth0/em1/g" ifcfg-em1
+	mv ifcfg-eth1 ifcfg-em2 && sed  -i "s/eth1/em2/g" ifcfg-em2
+	mv ifcfg-eth2 ifcfg-em3 && sed  -i "s/eth2/em3/g" ifcfg-em3
+	mv ifcfg-eth3 ifcfg-em4 && sed  -i "s/eth3/em4/g" ifcfg-em4
+	
+3,更新源：
+	cd /etc/yum.repos.d/
+	mkdir bak 
+	mv * bak
+	wget http://10.21.100.40/script/repo/base.repo  
+	wget http://10.21.100.40/script/repo/epel.repo  
+	wget http://10.21.100.40/script/repo/puppet.repo  
+	wget http://10.21.100.40/script/repo/rdo-release.repo
+	wget http://10.21.100.40/script/repo/ssl.repo
+	yum clean all
+	
+4,更新内核
+	yum  -y install kernel
+修改/boot/grub/grub.conf
+确认正确后，
+	reboot
+5, 安装puppet v3.3.2（其他版本puppet可能不能成功） 
+	yum -y install puppet
+6,采用vlan，需要将em3改成truck模式，如下：
+	cd /etc/sysconfig/network-scripts/
+	MAC=`ifconfig em3|grep HWaddr|awk  '{print $5}'` 
+	cat >ifcfg-em3  << EOF
+	DEVICE=em3
+	HWADDR=$MAC
+	ONBOOT=yes
+	TYPE=Ethernet
+	EOF
+	service network restart
+以上操作所有主机都必须做
+
+7，创建cinder-volume
+主节点操作：
+	pvcreate /dev/sdb
+	vgcreate cinder-volumes /dev/sdb
+
+8,安装
+	yum install -y openstack-packstack-2013.2.1-0.11.dev806.el6
+	packstack --gen-answer-file=multi-node-vlan.txt
+修改multi-node-vlan.txt
+	CONFIG_CINDER_VOLUMES_CREATE=n
+	CONFIG_HEAT_INSTALL=y
+	CONFIG_KEYSTONE_ADMIN_PW=mistack_9ijn0okm
+	CONFIG_NOVA_COMPUTE_HOSTS=10.200.100.19,10.200.100.20
+	CONFIG_NEUTRON_OVS_TENANT_NETWORK_TYPE=vlan
+	CONFIG_NEUTRON_OVS_VLAN_RANGES=physnet1:1000:2000
+	CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS=physnet1:br-em3
+	CONFIG_NEUTRON_OVS_BRIDGE_IFACES=br-em3:em3
+	CONFIG_HEAT_CLOUDWATCH_INSTALL=y
+	CONFIG_HEAT_CFN_INSTALL=y
+	CONFIG_USE_EPEL=n
+修改mysql路径：
+	修改/usr/lib/python2.6/site-packages/packstack/puppet/modules/mysql/manifests/params.pp
+	 40       $datadir               = '/home/mysql'
+	 41       $service_name          = 'mysqld'
+	 42       $socket                = '/var/lib/mysql/mysql.sock'
+	 43       $pidfile               = '/var/run/mysqld/mysqld.pid'
+	 44       $config_file           = '/etc/my.cnf'
+	 45       $log_error             = '/home/mysql/mysqld.log'
+	 修改datadir, log_error二个变量到/home/mysql下，socket变量不能改，改了会出错
+修改镜像存储路径：
+	/usr/lib/python2.6/site-packages/packstack/puppet/modules/glance/manifests/backend/file.pp
+		  7 class glance::backend::file(
+		  8   $filesystem_store_datadir = '/home/glance/images/'
+		  9 ) inherits glance::api {
+运行：
+	packstack --answer-file=multi-node-vlan.txt
+
+9，修改glance路径
+	mkdir /home/glance
+	chown  glance:glance /home/glance/
+	sed -i 's/filesystem_store_datadir=\/var\/lib\/glance\/images\//filesystem_store_datadir=\/home\/glance\//g' /etc/glance/glance-api.conf 
+	cd /etc/init.d/
+	for e in `ls openstack-glance-*`; do service $e restart; done
+	cd ~
+	source keystonerc_admin
+	glance add name="cirros" is_public=true container_format=ovf disk_format=raw< ./cirros-0.3.0-x86_64-disk.img
+	glance image-list
+
+10，打补丁(计算节点需要做)：
+	cd /usr/lib/python2.6/site-packages/neutron/agent/linux
+	mv iptables_firewall.py iptables_firewall.py.bak
+	wget http://10.21.100.56/src/package/openstack/iptables_firewall.py
+	diff iptables_firewall.py iptables_firewall.py.bak 
+	
+	每天清空token(控制节点)
+	添加crontab
+	00 01 * * *  /usr/bin/keystone-manage token_flush
+
+11，初始化磁盘（计算节点需要做）
+	parted /dev/sdb
+     mklabel gpt   
+     mkpart primary 0% 100% 
+
+	mkfs.ext4   /dev/sdb1
+    echo "/dev/sdb1               /var/lib/nova/instances                 ext4     defaults        0 0" >> /etc/fstab
+	mount -a
+
+    磁盘大于500G后，需要：
+    yum install -y xfsprogs kmod-xfs
+    mkfs.xfs  /dev/sdb1
+    当用mkfs.xfs磁盘时：
+    echo "/dev/sdb1               /var/lib/nova/instances                 xfs     defaults        0 0" >> /etc/fstab
+    mount -t xfs /dev/sdb1 /var/lib/nova/instances
+
+	chown -R nova:nova /var/lib/nova/instances/  
+
+11, 部署监控
+	cd /opt
+	mkdir src/
+	cd /opt/src
+	wget http://10.21.100.56/src/script/install_collectd.sh
+	sh install_collectd.sh
+	/usr/sbin/collectd -C /etc/collectd/collectd.conf
+	echo '/usr/sbin/collectd -C /etc/collectd/collectd.conf' >> /etc/rc.local
+
+	
+12，监控dashboard补丁
+	cd /usr/share/openstack-dashboard/openstack_dashboard/dashboards/admin
+	mv overview overview.bak
+	wget http://10.21.100.56/src/package/admin_overview.tgz
+	tar -xvf admin_overview.tgz
+	rm admin_overview.tgz
+	cd /usr/share/openstack-dashboard/static/dashboard/js
+	wget  http://10.21.100.56/src/package/js/jquery.js
+	wget  http://10.21.100.56/src/package/js/Chart.js
+	cd /usr/lib/python2.6/site-packages/horizon/templates
+	mv base.html base.html.bak
+	wget  http://10.21.100.56/src/package/js/base.html
+	cd /usr/share/openstack-dashboard/openstack_dashboard/dashboards/project/instances/templates/instances
+	mv  _detail_overview.html  _detail_overview.html.bak
+	wget  http://10.21.100.56/src/package/js/_detail_overview.html
