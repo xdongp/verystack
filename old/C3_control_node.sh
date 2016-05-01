@@ -54,8 +54,7 @@ EOF
 service mysqld start
 chkconfig mysqld on
 
-yum -y install yum-plugin-priorities
-yum -y install rdo-release-icehouse-3
+
 cd /etc/yum.repos.d/ && rm -f foreman.repo puppetlabs.repo rdo-release.repo
 yum clean all
 yum -y install crudini
