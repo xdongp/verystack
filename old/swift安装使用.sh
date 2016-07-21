@@ -343,15 +343,30 @@ swift -A http://119.188.116.70:8080/auth/v1.0 -U admin:admin -K admin delete box
 ```java 
 swift -A http://119.188.116.70:8080/auth/v1.0 -U admin:admin -K admin delete box002
 ```
-
- ACL配置
+ 设置acl
 ```java
-swift post -r ".r:*"  test
-````
-
-直接下载
-```java
- wget http://10.125.225.16:8080/v1/AUTH_f26d9b66a67549788f5376c10725d49b/test/ins.tgz
- ```
-
+1, 设置delay_auth_decision：vim /etc/swift/proxy-server.conf      
+delay_auth_decision = true
+2，设置keystone验证 [vim /etc/swift/proxy-server.conf]
+[pipeline:main]
+pipeline = healthcheck proxy-logging cache authtoken keystone proxy-logging account-quotas container-quotas proxy-server
+3，设置acl
+[root@ssdevop-con1 tmp(keystone_admin)]$ swift stat test            
+         Account: AUTH_f26d9b66a67549788f5376c10725d49b
+       Container: test
+         Objects: 2
+           Bytes: 13305531
+        Read ACL: .r:*
+       Write ACL:
+         Sync To:
+        Sync Key:
+   Accept-Ranges: bytes
+      X-Trans-Id: tx618d36d966f2467d9c2e8-0057909874
+X-Storage-Policy: Policy-0
+      Connection: keep-alive
+     X-Timestamp: 1469081151.03361
+    Content-Type: text/plain; charset=utf-8
+4， 下载：
+wget http://10.125.225.16:8080/v1/AUTH_f26d9b66a67549788f5376c10725d49b/test/ins.tgz
+```
 
