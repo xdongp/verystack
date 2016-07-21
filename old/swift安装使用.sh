@@ -344,7 +344,14 @@ swift -A http://119.188.116.70:8080/auth/v1.0 -U admin:admin -K admin delete box
 swift -A http://119.188.116.70:8080/auth/v1.0 -U admin:admin -K admin delete box002
 ```
 
+ ACL配置
+```java
+swift post -r ".r:*"  test
+````
 
-
+直接下载
+```java
+ wget http://10.125.225.16:8080/v1/AUTH_f26d9b66a67549788f5376c10725d49b/test/ins.tgz
+ ```
 
 
